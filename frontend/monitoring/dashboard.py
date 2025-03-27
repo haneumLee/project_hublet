@@ -33,7 +33,7 @@ except Exception as e:
     st.error(f"에러 발생: {e}")
 
 # ------------------------------
-# Part 2: 지갑 잔액 조회
+# 지갑 잔액 조회
 # ------------------------------
 st.header("Solana 지갑 잔액 조회")
 
@@ -55,3 +55,33 @@ if st.button("잔액 확인"):
             st.error(f"에러 발생: {e}")
     else:
         st.warning("지갑 주소를 입력해주세요.")
+
+# ------------------------------
+# NFT 목록 조회
+# ------------------------------
+st.header("보유한 NFT 목록")
+
+if wallet_address:
+    try:
+        nft_response = requests.post(
+            "http://backend:5000/wallet/nfts",
+            json={"address": wallet_address}
+        )
+
+        if nft_response.status_code == 200:
+            nft_data = nft_response.json()
+            nft_list = nft_data.get("nfts", [])
+
+            if not nft_list:
+                st.info("보유한 NFT가 없습니다.")
+            else:
+                for nft in nft_list:
+                    token_address = nft.get("tokenAddress", "Unknown")
+                    st.write(f"• NFT Token: `{token_address}`")
+        else:
+            st.error("NFT 정보를 가져오지 못했습니다.")
+
+    except Exception as e:
+        st.error(f"에러 발생: {e}")
+else:
+    st.warning("지갑 주소를 입력하면 NFT 목록을 조회할 수 있습니다.")
