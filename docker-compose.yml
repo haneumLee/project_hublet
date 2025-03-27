@@ -10,3 +10,13 @@ services:
     volumes:
       - ./frontend/monitoring:/app
     restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+    ports:
+      - "5001:5000"   
+    volumes:
+      - ./backend:/app
+    restart: unless-stopped
