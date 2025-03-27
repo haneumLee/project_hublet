@@ -47,5 +47,46 @@ def wallet_balance():
         # 오류 발생 시 에러 메시지 반환
         return jsonify({"error": str(e)}), 500
     
+
+# NFT 조회 API
+@app.route("/wallet/nfts", methods=["POST"])
+def wallet_nfts():
+    data = request.get_json()
+    address = data.get("address")
+
+    if not address:
+        return jsonify({"error": "Missing wallet address"}), 400
+
+    try:
+        url = f"https://public-api.solscan.io/account/tokens?account={address}"
+        headers = {
+            "accept": "application/json",
+            "User-Agent": "HubletBackend/1.0"
+        }
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 404:
+            # 지갑은 존재하지만, NFT 등 토큰이 없을 경우
+            return jsonify({"address": address, "nfts": []}), 200
+
+        response.raise_for_status()
+        tokens = response.json()
+
+        nfts = [
+            token for token in tokens
+            if token.get("tokenAmount", {}).get("amount") == "1"
+            and token.get("tokenAmount", {}).get("decimals") == 0
+        ]
+
+        return jsonify({"address": address, "nfts": nfts}), 200
+
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": f"Request failed: {str(e)}"}), 500
+    except ValueError as e:
+        return jsonify({"error": f"Invalid JSON: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+        
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)  # 반드시 host="0.0.0.0"
