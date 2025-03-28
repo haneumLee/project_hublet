@@ -10,6 +10,8 @@ services:
     volumes:
       - ./frontend/monitoring:/app
     restart: unless-stopped
+    networks:
+      - hublet_net
 
   backend:
     build:
@@ -20,3 +22,19 @@ services:
     volumes:
       - ./backend:/app
     restart: unless-stopped
+    networks:
+      - hublet_net
+
+  backend-devnet:
+    build:
+      context: ./backend_devnet
+    ports:
+      - "5002:5000"  # 충돌 방지
+    volumes:
+      - ./backend_devnet:/app
+    networks:
+      - hublet_net
+
+networks:
+  hublet_net:
+    driver: bridge

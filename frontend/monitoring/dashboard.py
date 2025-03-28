@@ -43,7 +43,8 @@ if st.button("잔액 확인"):
     if wallet_address:
         try:
             response = requests.post(
-                "http://backend:5000/wallet/balance",
+                #"http://backend:5000/wallet/balance",
+                "http://backend-devnet:5001/wallet/balance",
                 json={"address": wallet_address}
             )
             if response.status_code == 200:
@@ -64,7 +65,8 @@ st.header("보유한 NFT 목록")
 if wallet_address:
     try:
         nft_response = requests.post(
-            "http://backend:5000/wallet/nfts",
+            #"http://backend:5000/wallet/nfts",
+            "http://backend-devnet:5001/wallet/nfts",
             json={"address": wallet_address}
         )
 
@@ -85,3 +87,32 @@ if wallet_address:
         st.error(f"에러 발생: {e}")
 else:
     st.warning("지갑 주소를 입력하면 NFT 목록을 조회할 수 있습니다.")
+
+# ------------------------------
+# NFT 조회 버튼을 따로 둠
+# ------------------------------
+if st.button("NFT 조회"):
+    if not wallet_address:
+        st.warning("지갑 주소를 입력하면 NFT 목록을 조회할 수 있습니다.")
+    else:
+        try:
+            nft_response = requests.post(
+                #"http://backend:5000/wallet/nfts",
+                "http://backend-devnet:5001/wallet/nfts",
+                json={"address": wallet_address}
+            )
+
+            if nft_response.status_code == 200:
+                nft_data = nft_response.json()
+                nft_list = nft_data.get("nfts", [])
+
+                if not nft_list:
+                    st.info("보유한 NFT가 없습니다.")
+                else:
+                    for nft in nft_list:
+                        token_address = nft.get("tokenAddress", "Unknown")
+                        st.write(f"• NFT Token: `{token_address}`")
+            else:
+                st.error("NFT 정보를 가져오지 못했습니다.")
+        except Exception as e:
+            st.error(f"에러 발생: {e}")
